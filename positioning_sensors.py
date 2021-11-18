@@ -9,6 +9,9 @@ def f5(i,p,e=4):
     return i*e**(p)
 
 def getN(W,i,j):
+    '''
+    
+    '''
     
     ln = ([])
     
@@ -22,6 +25,9 @@ def getN(W,i,j):
     ln.append(W[i+1,j-1])
     ln.append(W[i,j+1])
     ln.append(W[i,j-1])
+    
+    # check if the central pixel has the maximum value with respect to its 8 neighbours.
+    # if it is the maximum value of the neighbor is equals to central pixel is considered maximum.
     
     opt = False if W[i,j]<max(ln) else True
     
@@ -80,6 +86,9 @@ def plot_examples(data,colormaps,filename):
     plt.savefig(filename, dpi = 150)
 
 def getMax(img):
+    '''
+    
+    '''
     
     B = np.zeros(img.shape)
     
@@ -105,6 +114,9 @@ def get_coords(seeds):
     return coords
 
 def makeSpatialScatter(pc,mask,img):
+    '''
+    
+    '''
 
     i = j = 0
     
@@ -116,7 +128,9 @@ def makeSpatialScatter(pc,mask,img):
     
     for i in range(1,img.shape[0]):
         for j in range(1,img.shape[1]):
+            
             if mask[i][j]==1:
+                
                 p = np.array([i,j])
 
                 d = np.linalg.norm(p-pc)
