@@ -134,7 +134,7 @@ def variogram(sc,h=30):
     for h in range(1,30):
 
 
-        ix = (sc[:,0]>(h-1))*(sc[:,0]<=h)
+        ix = (sc[:,0]>(h-0.5))*(sc[:,0]<=(h+0.5))
         n = np.sum(ix)
         if n >0:
             v = np.sum(sc[ix,1])
