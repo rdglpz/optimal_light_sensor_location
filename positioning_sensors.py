@@ -265,6 +265,41 @@ def getMaxRadio(ac,mv):
                 
                 
 
+def fillArea(p,accum,radio,direction,mshape):
+    emptyZ = np.zeros(mshape)
+    emptyMZ = np.zeros(mshape)
+    
+    dy = p[0]
+    dx = p[1]
+    
+    for r in np.arange(0,radio,0.1):
+                    
+        #asumiendo que el angulo está centrado en el origen calculamos las coordenadas (y,x) dado la direccon dado por el ángulo en radianes y el tamaño del radio
+        y = np.int(np.round(r*np.sin(np.radians(direction))))
+        x = np.int(np.round(r*np.cos(np.radians(direction))))
+
+        #we take care of the positive squared boundaries
+        #trasladamos las coordenadas a su posición original            
+        py = dy+y
+        px = dx+x
+                
+        #validamos que (py,px) estén dentro de los limites de la matriz        
+        if py>=mshape[0]:
+            py = mshape[0]-1
+        elif py < 0 :
+            py = 0
+                        
+        if px>=mshape[1]:
+            px = mshape[1]-1
+        elif px < 0 :
+            px = 0
+                    
+    
+        emptyZ[py,px] = accum[int(r)]
+        emptyMZ[py,px] = 1
+        
+    return emptyZ,emptyMZ
+    
     
 
 def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False):
@@ -279,8 +314,8 @@ def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False
     
     max_var = getMaximumVariance(S,th)
 
-    
     setC = np.zeros((len(coords),S.shape[0],S.shape[1]))
+    
     z    = np.zeros((len(coords),S.shape[0],S.shape[1]))
     mz   = np.zeros((len(coords),S.shape[0],S.shape[1]))
     
@@ -306,32 +341,13 @@ def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False
 
             # detectamos hasta que indice se cumple el requerimiento de la varianza
             #getVar
-            
-            #def getMaxRadio(accum,max_var)
-            #return radio
-
-            bs = accum <= max_var
-            nf = np.where(bs==False)
-            
-            if len(nf[0])>0:
-
-                bs[nf[0][0]:] = False
-                radio = np.sum(bs)
-
-            else:
-
-                radio = len(bs)
                 
             radio = getMaxRadio(accum,max_var)  
-            #recorrer desde el centro hasta el largo del radio
             
-            if True:
-#                print("enter",radio)
-                inspect_bs = bs
-                inspect_nf = nf
-                inspect_radio = radio
+            
+            #recorrer desde el centro hasta el largo del ra
 
-
+            #def fillArea(radio,direction,emptyZ,emptyMZ)
             for r in np.arange(0,radio,0.1):
                     
 
@@ -357,8 +373,16 @@ def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False
     
                 z[i][py,px] = accum[int(r)]
                 mz[i][py,px]=1
-
-
+            
+            s = S.shape
+            z_aux    = np.zeros((S.shape[0],S.shape[1]))
+            mz_aux   = np.zeros((S.shape[0],S.shape[1]))
+            
+            a_aux, mz_aux = fillArea(p,accum,radio,direction,s)
+            
+            z[i] += z_aux
+            mz[i] += mz_aux
+        
         setC[i][c[0]][c[1]]=1
         mz[i][c[0]][c[1]]=1
         
@@ -382,3 +406,22 @@ def readIMG(img,invert=False,null=255):
         im1 = P.max()-P
 
     return im1
+
+def plotMasks(mask,L,W):
+    ngrid = np.int32(np.ceil(np.sqrt(len(mask))))
+    fig, axs = plt.subplots(ngrid, ngrid,figsize = (30,30))
+    c=0
+    for i in range(ngrid):
+        for j in range(ngrid):
+            if i * ngrid + j < len(mask):
+                axs[i, j].imshow(mask[c])
+                axs[i, j].set_title("w: {:.1f}, c {}".format(np.sum(mask[c]*W*L[c]),str(coords[c])))
+                c+=1
+    plt.show()
+    
+    
+def desaturate(img,th=62):
+    image = img>=th
+    distance = ndi.distance_transform_edt(image)
+    nonsat = img+(distance)
+    return nonsat
