@@ -226,7 +226,6 @@ def getOrientationMask(d,dtol,S,dx,dy):
     setA = np.zeros(S.shape)
     setB = np.zeros(S.shape)
     
-    
     for y in range(S.shape[0]):
         for x in range(S.shape[1]):
 
@@ -241,11 +240,7 @@ def getOrientationMask(d,dtol,S,dx,dy):
             else:
                 setB[y][x] = 1 if m2*(x-dx)+dy-y < 0 else 0
 
-
-    mask = setA*setB
-    
-    
-    return mask
+    return setA*setB
     
 def getMaxRadio(ac,mv):
     """
@@ -335,44 +330,11 @@ def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False
             sc = makeSpatialScatter(p,mask,S)
             accum = variogram(sc)
             
-            
-            if verbose: print(accum)
-            
 
             # detectamos hasta que indice se cumple el requerimiento de la varianza
             #getVar
                 
             radio = getMaxRadio(accum,max_var)  
-            
-            
-            #recorrer desde el centro hasta el largo del ra
-
-            #def fillArea(radio,direction,emptyZ,emptyMZ)
-            for r in np.arange(0,radio,0.1):
-                    
-
-                y = np.int(np.round(r*np.sin(np.radians(direction))))
-                x = np.int(np.round(r*np.cos(np.radians(direction))))
-
-                    #we take care of the positive squared boundaries
-                    
-                py = dy+y
-                px = dx+x
-                
-                
-                if py>=S.shape[0]:
-                    py = S.shape[0]-1
-                elif py < 0 :
-                    py = 0
-                        
-                if px>=S.shape[1]:
-                    px = S.shape[1]-1
-                elif px < 0 :
-                    px = 0
-                    
-    
-                z[i][py,px] = accum[int(r)]
-                mz[i][py,px]=1
             
             s = S.shape
             z_aux    = np.zeros((S.shape[0],S.shape[1]))
