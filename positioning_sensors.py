@@ -28,6 +28,7 @@ def f5(i,p,e=4):
     
     W = i*a^(p-r)
     '''
+    print(" W = i*a^(p)")
     return i*e**(p)
 
 def getN(W,i,j):
@@ -157,6 +158,7 @@ def variogram(sc,h=30):
        
             ix = (sc[:,0]>(h-0.5))*(sc[:,0]<=(h+0.5))
             n = np.sum(ix)
+
             
             if n > 0:
                 v = np.sum(sc[ix,1])
@@ -342,11 +344,15 @@ def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False
             
             a_aux, mz_aux = fillArea(p,accum,radio,direction,s)
             
+            mz[i]+= a_aux
             z[i] += z_aux
-            mz[i] += mz_aux
+            
+            #mz[i] += mz_aux
         
         setC[i][c[0]][c[1]]=1
-        mz[i][c[0]][c[1]]=1
+        
+        #use a mask to point out that the 0 is for 0 variance associated to the sensor locations
+        mz[i][c[0]][c[1]]=0.000000000001
         
         if verbose == True: print("--")
     
