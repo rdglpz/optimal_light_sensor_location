@@ -393,3 +393,24 @@ def desaturate(img,th=62):
     distance = ndi.distance_transform_edt(image)
     nonsat = img+(distance)
     return nonsat
+
+
+def saveRegions(varmask,locations,name = "allcoversnonsatat15percent.csv"):
+    
+    #flattenizing
+
+    fvm = [varmask[i].flatten() for i in range(len(varmask))]
+    df = pd.DataFrame(fvm)
+    
+    c  = np.array([ps.get_coords(locations[i]) for i in range(len(locations)) ])
+    cf = c.flatten()
+    coords = cf.reshape(len(locations),2)
+    df.insert(0,"coordsy", coords[:,0])
+    df.insert(1,"coordsx", coords[:,1])
+    df.to_csv(name)
+    
+#def readRegions(name):
+    
+    
+    
+    
