@@ -11,7 +11,7 @@ def aptitude(X,nonsat,varmask,only_aptitude=True):
     # tomamos en cuenta donde solo tenemos un 
     mask = np.sum(M>0,axis=0)==1
     
-    #mask = np.max(M,axis=0)
+    #mask = -np.sum(np.max(M,axis=0))
     
  #   np.sum([mask]*len(M)*M)
 
