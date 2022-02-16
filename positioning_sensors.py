@@ -4,6 +4,7 @@ from matplotlib_scalebar.scalebar import ScaleBar
 from scipy import ndimage as ndi
 from skimage.segmentation import watershed
 from PIL import Image
+from IPython.display import display, clear_output
 
 def f2(i,p):
     '''
@@ -30,6 +31,15 @@ def f5(i,p,e=4):
     '''
     print(" W = i*a^(p)")
     return i*e**(p)
+
+def f6(i,s,p=4):
+    '''
+    Pesos exponenciales
+    
+    W = i*s^(p)
+    '''
+    print(" W = i*s^(p)")
+    return i*s**p
 
 def getN(W,i,j):
     
@@ -208,6 +218,9 @@ def waterShedRegions(S,C):
     return L
 
 def getMaximumVariance(S,th):
+    """
+    th ={0,100}
+    """
     S_flatten = S.flatten()
     vmax = np.max(S_flatten)
     vmin = np.min(S_flatten)
@@ -251,7 +264,12 @@ def getMaxRadio(ac,mv):
     """
     
     bs = ac <= mv
+     
+    
+    
     nf = np.where(bs==False)
+
+    
     if len(nf[0])>0:
         bs[nf[0][0]:] = False
         radio = np.sum(bs)
@@ -317,6 +335,8 @@ def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False
     mz   = np.zeros((len(coords),S.shape[0],S.shape[1]))
     
     for i,c in enumerate(coords):
+        clear_output(wait=True)
+        display( "{:.2f}%".format(100*(i/len(coords))) )
         if verbose == True: print("Coords ", c)
     
         dy = c[0]
@@ -335,16 +355,31 @@ def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False
 
             # detectamos hasta que indice se cumple el requerimiento de la varianza
             #getVar
-                
+            
+            # lo primero que se cumpla, rebasa la toleracia de la varianza o encuentre un maximo
+            accum = np.append([0],accum)
             radio = getMaxRadio(accum,max_var)  
             
-            s = S.shape
+            
+            args = np.where((accum[1:]-accum[:-1])<=0)
+            radio_first_local_max = radio+1
+            
+            if len(args[0])>0:
+                radio_first_local_max = args[0][0]+1
+            
+            #print(direction,radio,radio_first_local_max)
+            radio = np.min([radio,radio_first_local_max])
+           
+            
+            
             z_aux    = np.zeros((S.shape[0],S.shape[1]))
             mz_aux   = np.zeros((S.shape[0],S.shape[1]))
             
-            a_aux, mz_aux = fillArea(p,accum,radio,direction,s)
+            a_aux, mz_aux = fillArea(p,accum,radio,direction,S.shape)
             
-            mz[i]+= a_aux
+            xor_mask = np.logical_xor(a_aux,mz[i])
+
+            mz[i]+= xor_mask*a_aux
             z[i] += z_aux
             
             #mz[i] += mz_aux
