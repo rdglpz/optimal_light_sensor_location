@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class SensorFitness():
+class NetworkFitness():
     """
     
     """
@@ -11,7 +11,7 @@ class SensorFitness():
         """
         
         """
-        print("Selct cost functions: \n 'xor','max'")
+        print("Selct cost functions: \n 'xor','max' or 'cover'")
         self.NLTI = NLTI
         self.EAM = EAM
         self.sensitivity = sensitivity
@@ -25,7 +25,7 @@ class SensorFitness():
         elif s=="max":
             self.f = self.maximum
         elif s=="cover":
-            self.f = self.evaluateCoverage
+            self.f = self.bruteCoverage
 
         
     def validate_coordinates(self,iy,ix):
@@ -53,9 +53,12 @@ class SensorFitness():
             sy,sx = s[0],s[1]
             ix = self.validate_coordinates(sy,sx)
             coverage[i] = np.zeros(self.NLTI.shape)
+            
+            #descartamos aquella región con semivariograma >= 2
+            bounded_local_var = (self.local_variograms[ix])*(self.local_variograms[ix]<=2)
  
             if len(ix)>0: 
-                map0to1 = 1/(1+self.local_variograms[ix]) 
+                map0to1 = 1/(1+bounded_local_var) 
                 coverage[i] = map0to1*(map0to1<1)*self.sensitivity
         return coverage
     
@@ -81,21 +84,16 @@ class SensorFitness():
                 coordinates = self.coordinates[ix][0]
                 pi = self.NLTI[coordinates[0]][coordinates[1]]
                 tvar = self.local_variograms[ix][0]
-                
                 outofrange = (tvar==0)*(pi**2/2)
                 tvar[coordinates[0]][coordinates[1]]=0
-                
                 M = tvar+outofrange
-                
-                       
-                
                 lb = pi**2/2
                 map0to1 = (-M+lb)/lb
 
                 coverage[i] = map0to1*self.sensitivity
         return coverage
     
-    def evaluateCoverage(self,X):
+    def coverMaps(self,X):
         """
         
         """
@@ -112,11 +110,10 @@ class SensorFitness():
             
             if len(ix)>0:
                 coverage[i] = self.local_variograms[ix][0]>0
-                
-        M = coverage
+            
         
         
-        return -np.sum(np.sum(M,axis=0)>0)
+        return coverage
                 
     def maximum(self,X):
         """
@@ -124,8 +121,9 @@ class SensorFitness():
         
         """
     
-        M = self.coverage2(X)
-        #creamos n mapas de cobertutura de cada sensor        
+        M = self.coverage(X)
+        #creamos n mapas de cobertutura de cada sensor   
+        
         return -np.sum(np.max(M,axis=0))
     
     def xor(self,X):
@@ -144,6 +142,18 @@ class SensorFitness():
 
         return -(np.sum([mask]*len(M)*M))
     
+    def bruteCoverage(self,X):
+        """
+        
+        """
+        
+        M = self.coverMaps(X)
+        
+        
+        return -np.sum(np.sum(M,axis=0)>0)
+        
+        
+    
     def showPositions(self,X):
         """
         show positions, coverage, histogram, covered sensitivity
@@ -156,6 +166,12 @@ class SensorFitness():
         for i,p in enumerate(sensor_list.astype(int)):
             positions[p[0]][p[1]] = i+1
         return positions
+    
+    def showVariogram(self,X):
+        """
+        
+        """
+        
         
         
                 
