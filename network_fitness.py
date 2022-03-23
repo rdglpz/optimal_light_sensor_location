@@ -55,7 +55,10 @@ class NetworkFitness():
             coverage[i] = np.zeros(self.NLTI.shape)
             
             #descartamos aquella región con semivariograma >= 2
-            bounded_local_var = (self.local_variograms[ix])*(self.local_variograms[ix]<=2)
+            #esto se puede mejorar estimando el variograma teórico y 
+            #considerar  el 95% de las semivarianzas antes de tocar umbral
+            # sill, a partir de la primera semivarianza C_0
+            bounded_local_var = (self.local_variograms[ix])*(self.local_variograms[ix]<=50)
  
             if len(ix)>0: 
                 map0to1 = 1/(1+bounded_local_var) 

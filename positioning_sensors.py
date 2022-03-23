@@ -228,15 +228,56 @@ def getMaximumVariance(S,th):
     max_var = th * vrange/100
     return max_var
 
+def getOrientationMaskII(si,sj,atol,Img):
+    """
+    atol: angle tolerance
+    """
+    
+    # area constrained by angle
+    A = np.zeros(Img.shape)
+    angle = ps.angle(si,sj)
+    angleinf = (angle-atol)
+    anglesup = (angle+atol)
+    
+    for i in range(nonsat.shape[0]):
+        for j in range(nonsat.shape[1]):
+            
+            #sk is the test coordinate. is the sk point inside the cone?
+            sk = np.array([i,j])
+            
+            
+            #probar este angulo si esta en el cono
+            # b va de 0 a 359.999 
+            #is the angle of interest?
+            anglek = ps.angle(si,sk)
+            
+            # correction if angleinf is <0, the anglek are in [0,360)
+            if angleinf < 0 and ((anglek > (angleinf%360)) or (anglek<anglesup)) :
+                A[i][j] = 1
+                    
+            if anglesup>=360 and ((anglek > angleinf) or (anglek<(anglesup%360))) :
+#                anglesupp = anglesup%360
+#                if (anglek > angleinf) or (anglek<(anglesup%360)):
+
+                A[i][j] = 1          
+            if (anglek<anglesup) and (anglek>angleinf):
+                A[i][j] = 1
+    
+    return A
+
 def getOrientationMask(d,dtol,S,dx,dy):
     """
-    S is a matrix
+    d: direction in grads (0-360)
+    dtol: direction tolerance (range) in angle
+    S: is a matrix
     """
 
     gm1 = d-dtol
     gm2 = d+dtol
     m1 = np.tan(np.radians(gm1))
     m2 = np.tan(np.radians(gm2))
+    
+    print(m1,m2)
     
     setA = np.zeros(S.shape)
     setB = np.zeros(S.shape)
@@ -256,6 +297,56 @@ def getOrientationMask(d,dtol,S,dx,dy):
                 setB[y][x] = 1 if m2*(x-dx)+dy-y < 0 else 0
 
     return setA*setB
+
+def angle(si,sj):
+    
+    s0 = si-si
+    sja = sj-si
+#    print(s0)
+#    print(sja)
+    
+    dy =  sja[0]-s0[0]
+    dx =  sja[1]-s0[1]
+    
+    
+    if dx!=0 and dy!=0:
+        m1= dy/dx
+        if dy > 0 and dx > 0:
+            
+            r = np.rad2deg(np.arctan(m1))
+
+        if dy > 0 and dx < 0:
+  
+            r = 180+np.rad2deg(np.arctan(m1))
+
+        if dy<=0 and dx < 0:
+
+            r = np.rad2deg(np.arctan(m1))+180
+
+        if dy<=0 and dx > 0:
+
+            r = 360+np.rad2deg(np.arctan(m1))
+    
+    
+    if dy == 0 and dx >0:
+        r = 90*0
+        
+    if dy>0 and dx == 0:
+        r = 90*1
+        
+    if dy == 0 and dx < 0:
+        r = 90*2
+        
+    if dx == 0 and dy < 0:
+        r = 90*3
+        
+    if dx == 0 and dy == 0:
+        r = 0
+        
+    return r
+    
+
+
     
 def getMaxRadio(ac,mv):
     """
@@ -319,7 +410,7 @@ def fillArea(p,accum,radio,direction,mshape):
 
 def computeRegions(S,coords,th = 0.6, atol=30, direction_delta = 2,verbose=False):
     """
-    S: light map
+    S: NLTI  map
     coords: maximum points
     th: valid variannce in %
     atol = angle tolerance 
@@ -445,6 +536,45 @@ def saveRegions(varmask,locations,name = "allcoversnonsatat15percent.csv"):
     df.to_csv(name)
     
 #def readRegions(name):
+
+
+def gom(si,sj,atol,Img):
+    """
+    gom: get orienttion mask
+    atol: angle tolerance
+    """
+    
+    # area constrained by angle
+    A = np.zeros(Img.shape)
+    ang = angle(si,sj)
+    angleinf = (ang-atol)
+    anglesup = (ang+atol)
+    
+    for i in range(Img.shape[0]):
+        for j in range(Img.shape[1]):
+            
+            #sk is the test coordinate. is the sk point inside the cone?
+            sk = np.array([i,j])
+            
+            
+            #probar este angulo si esta en el cono
+            # b va de 0 a 359.999 
+            #is the angle of interest?
+            anglek = angle(si,sk)
+            
+            # correction if angleinf is <0, the anglek are in [0,360)
+            if (angleinf < 0) and ((anglek > (angleinf%360)) or (anglek<anglesup)) :
+                A[i][j] = 1
+                    
+            if anglesup>=360 and ((anglek > angleinf) or (anglek<(anglesup%360))) :
+#                anglesupp = anglesup%360
+#                if (anglek > angleinf) or (anglek<(anglesup%360)):
+
+                A[i][j] = 1          
+            if (anglek<anglesup) and (anglek>angleinf):
+                A[i][j] = 1
+    
+    return A
     
     
     
