@@ -550,6 +550,9 @@ def gom(si,sj,atol,Img):
     angleinf = (ang-atol)
     anglesup = (ang+atol)
     
+    # en vez de recorrer toda la imagen, usar crecimiento de regiones inicializado en si
+    # considerar si los vecinos sk;
+    # 1) están dentro de angle inf y angle sup
     for i in range(Img.shape[0]):
         for j in range(Img.shape[1]):
             
@@ -563,15 +566,26 @@ def gom(si,sj,atol,Img):
             anglek = angle(si,sk)
             
             # correction if angleinf is <0, the anglek are in [0,360)
-            if (angleinf < 0) and ((anglek > (angleinf%360)) or (anglek<anglesup)) :
-                A[i][j] = 1
+            
+            s1 =  (angleinf < 0) and ((anglek > (angleinf%360)) or (anglek<anglesup))
+            s2 = (anglesup>=360 and ((anglek > angleinf) or (anglek<(anglesup%360))))
+            s3 = (anglek<anglesup) and (anglek>angleinf)
+            
+            
+#            if (angleinf < 0) and ((anglek > (angleinf%360)) or (anglek<anglesup)) :
+#                A[i][j] = 1
                     
-            if anglesup>=360 and ((anglek > angleinf) or (anglek<(anglesup%360))) :
-#                anglesupp = anglesup%360
-#                if (anglek > angleinf) or (anglek<(anglesup%360)):
+#            if anglesup>=360 and ((anglek > angleinf) or (anglek<(anglesup%360))) :
+#                A[i][j] = 1   
+                
+#            if (anglek<anglesup) and (anglek>angleinf):
+#                A[i][j] = 1
+                
 
-                A[i][j] = 1          
-            if (anglek<anglesup) and (anglek>angleinf):
+            #if (s1 or s2 or s3) and (d(sk,si) inside the range): 
+            #    A[i][j] = 1
+            
+            if (s1 or s2 or s3):
                 A[i][j] = 1
     
     return A

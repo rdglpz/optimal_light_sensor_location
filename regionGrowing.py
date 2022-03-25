@@ -17,6 +17,7 @@ class rGrowing():
     
     
     def getRegion(self,t):
+        import numpy as np
         '''
         
         '''
