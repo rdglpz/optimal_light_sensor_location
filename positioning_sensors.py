@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib_scalebar.scalebar import ScaleBar
+#from matplotlib_scalebar.scalebar import ScaleBar
 from scipy import ndimage as ndi
 from skimage.segmentation import watershed
 from PIL import Image
@@ -518,7 +518,7 @@ def desaturate(img,th=62):
     image = img>=th
     distance = ndi.distance_transform_edt(image)
     nonsat = img+(distance)
-    return nonsat
+    return nonsat,distance
 
 
 def saveRegions(varmask,locations,name = "allcoversnonsatat15percent.csv"):
@@ -589,6 +589,98 @@ def gom(si,sj,atol,Img):
                 A[i][j] = 1
     
     return A
+
+def gom_growing(si,sj,atol,Img):
+    # area constrained by angle
+    A = np.zeros(Img.shape)
+    ang = angle(si,sj)
+    angleinf = (ang-atol)
+    anglesup = (ang+atol)
+    
+    d = np.sum((si-sj)**2)**(1/2)
+    
+    print(t)
+    #Img = self.Img
+    #1) pila que recuerda las celdas por visitar
+    self.stack = []
+        
+    #2) matriz que marca las celdas visitadas
+    visit = np.zeros(self.Img.shape)
+        
+    #3) t es la tupla semilla y se marca como visitada
+    visit[t] = 1
+        
+    #4) se guarda la tupla en la pila
+    self.stack.append(t)
+    
+def perimeter(img):
+    '''
+    
+    '''
+    perimeter = list([])
+    for i in range(0,img.shape[1]):
+        perimeter.append((0,i))
+
+    for i in range(0,img.shape[1]):
+        perimeter.append((img.shape[1]-1,i))
+    
+    for i in range(0,img.shape[0]):
+        perimeter.append((i,0))
+
+    for i in range(0,img.shape[0]):
+        perimeter.append((i,img.shape[1]-1))
+        
+    return perimeter
+
+
+
+def constructMask(si,img):
+    '''
+    
+    '''
+    from skimage.draw import line
+    
+    sv = np.zeros(img.shape)
+    
+    corner = perimeter(img)
+    
+    msk = np.zeros(img.shape)
+    
+    for x in corner:
+        rr, cc = line(si[0], si[1], x[0], x[1])
+        l = list([])
+        
+        
+        for i in range(len(rr)):
+            a = (rr[i],cc[i])
+            l.append(img[a])
+            
+        #calculate the differences
+        derivative = np.array(l[1:] - np.array(l[:-1]))
+        
+        #we detect the first derivative with the decresase of semivariogram
+        
+        if len(np.where((derivative <= 0)*1==1)[0])>0:
+            
+            ix = np.where((derivative <= 0)*1==1)[0][0]+0
+        else:
+            
+            #the last index possible in derivative vector
+            ix = len(derivative)-1
+        
+        
+        
+        
+        #we mark this with one
+        msk[rr[:ix+1],cc[:ix+1]] = 1
+    
+    return msk
+    
+    
+    
+        
+    
+    
     
     
     
