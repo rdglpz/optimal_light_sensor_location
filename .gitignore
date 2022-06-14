@@ -112,3 +112,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+#exclude backupfolder
+
+bk/
+
+#figures
+
+figures/
+
+exp*
+ 
+
