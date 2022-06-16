@@ -29,7 +29,7 @@ import itertools as it
 
 plt.style.use("ggplot")
 
-setup = me.readConfigFile("config_exp_050512022.txt")
+setup = me.readConfigFile("config_exp_15062022_redo_exp.txt")
 
 
 #cargamos imagenes en luminance e importance
