@@ -23,7 +23,7 @@ class rGrowing():
         
         if params["type"]=="semivar":
             
-            self.si = params["si"]
+
             self.atol = params["atol"]
             self.dtol = params["dtol"]
             
@@ -176,6 +176,7 @@ class rGrowing():
         
         
         '''
+        self.si=si
         import numpy as np
         z = np.zeros(self.Img.shape)
 
@@ -184,7 +185,7 @@ class rGrowing():
                 sj = (i,j)
                 seed = sj
                 set_ri = self.getRegion(seed)
-                z[sj] = np.mean([(self.Img[si]-self.Img[c])**2   for c in self.coords])/2
+                z[sj] = np.mean([(self.Img[self.si]-self.Img[c])**2   for c in self.coords])/2
         z[si] = 0
         return z
     
